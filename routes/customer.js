@@ -7,7 +7,7 @@ let options = {
     port: 3306,
     user: 'root',
     password: '12345678',
-    database: 'test'
+    database: 'bank'
 };
 
 let connection = mysql.createConnection(options);
@@ -89,10 +89,62 @@ router.post('/', function (req, res) {
 // Get account number
 // router.get('/?acno=10',getAcNo)
 
+// router.get('/', function (req, res) {
+//     let check_sql = `select *
+//                      from account
+//                      where account_number = '${req.query["acno"]}'`;
+//     connection.query(check_sql, function (err, data, fields) {
+//         if (err) throw err;
+//         console.log(data);
+//         console.log(fields);
+//         const result = Object.values(JSON.parse(JSON.stringify(data)));
+//         result.forEach((v) => console.log(v));
+//         if (result.length === 0) {
+//             res.json({
+//                 success: false,
+//                 message: "Check your email or password"
+//             })
+//         } else {
+//             res.json({
+//                 success: true,
+//                 message: "Logged in"
+//             })
+//
+//         }
+//
+//     })
+//
+// });
+
 // Get transaction
 // router.get('/trans?acno=10',getTrans)
 
 // Send money
 // router.post('/send/',sendMoney)
+
+router.post('/send', function (req, res) {
+    let check_sql = `create trigger trig_ke after insert on transaction for each row set @sum=(select applicant_balance from account where account_number='${req.body["transacted_from"]}')-${req.body["debit_amt"]}'`;
+    connection.query(check_sql, function (err, data, fields) {
+        if (err) throw err;
+        console.log(data);
+        console.log(fields);
+        const result = Object.values(JSON.parse(JSON.stringify(data)));
+        result.forEach((v) => console.log(v));
+        if (result.length === 0) {
+            res.json({
+                success: false,
+                message: "Check your email or password"
+            })
+        } else {
+            res.json({
+                success: true,
+                message: "Logged in"
+            })
+
+        }
+
+    })
+
+});
 
 module.exports = router;
