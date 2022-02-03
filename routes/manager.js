@@ -43,24 +43,36 @@ router.post('/', function (req, res) {
 
 // Add Employee
 router.post('/addEmp', function (req, res) {
-    let check_sql = `insert into employee(employee_email, employee_password, employee_name, employee_gender,
-                                          employee_phone_no, employee_address)
-                     VALUES ('${req.body["employee_email"]}',
-                             '${req.body["employee_password"]}',
-                             '${req.body["employee_name"]}',
-                             '${req.body["employee_gender"]}',
-                             '${req.body["employee_phone_no"]}',
-                             '${req.body["employee_address"]}')`;
+    let check_sql = `select employee_email
+                     from employee
+                     where employee_email = '${req.body["employee_email"]}'`;
     connection.query(check_sql, function (err, data, fields) {
-        if (err) throw err;
+        const result = Object.values(JSON.parse(JSON.stringify(data)));
+        if (result.length !== 0) {
+            res.json({
+                success: false,
+                message: "email id already exists"
+            })
+        } else {
+            let insert_emp = `insert into employee(employee_email, employee_password, employee_name, employee_gender,
+                                                   employee_phone_no, employee_address)
+                              VALUES ('${req.body["employee_email"]}',
+                                      '${req.body["employee_password"]}',
+                                      '${req.body["employee_name"]}',
+                                      '${req.body["employee_gender"]}',
+                                      '${req.body["employee_phone_no"]}',
+                                      '${req.body["employee_address"]}')`;
+            connection.query(insert_emp, function (err, data, fields) {
+                if (err) throw err;
 
-        res.json({
-            success: true,
-            message: "Successfully customer values added"
-        })
+                res.json({
+                    success: true,
+                    message: "Successfully employee values added"
+                })
 
+            })
+        }
     })
-
 });
 
 
@@ -88,7 +100,6 @@ router.put('/updateEmp', function (req, res) {
     connection.query(find_sql, function (err, data, fields) {
         if (err) throw err;
         const result = Object.values(JSON.parse(JSON.stringify(data)));
-        result.forEach((v) => console.log(v));
         if (result.length === 0) {
             res.json({
                 success: false,
@@ -103,7 +114,6 @@ router.put('/updateEmp', function (req, res) {
                                   employee_phone_no='${req.body["employee_phone_no"]}',
                                   employee_address='${req.body["employee_address"]}'
                               where employee_id = '${req.query["id"]}' `;
-            console.log(update_sql)
             connection.query(update_sql, function (err, data, fields) {
                 if (err) throw err;
                 res.json({

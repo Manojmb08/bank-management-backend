@@ -68,26 +68,39 @@ router.get('/', function (req, res) {
 
 // Add Customer
 router.post('/addCust', function (req, res) {
-    let check_sql = `insert into account(account_number, account_type, branch, ifsc, applicant_name,
-                                         applicant_phone_no, applicant_dob, applicant_email, applicant_address,
-                                         applicant_gender, applicant_balance)
-                     VALUES ('${req.body["account_number"]}',
-                             '${req.body["account_type"]}',
-                             '${req.body["branch"]}',
-                             '${req.body["ifsc"]}',
-                             '${req.body["applicant_name"]}',
-                             '${req.body["applicant_phone_no"]}',
-                             '${req.body["applicant_dob"]}',
-                             '${req.body["applicant_email"]}',
-                             '${req.body["applicant_address"]}',
-                             '${req.body["applicant_gender"]}',
-                             '${req.body["applicant_balance"]}')`;
+    let check_sql = `select applicant_email
+                     from account
+                     where applicant_email = '${req.body["applicant_email"]}'`;
     connection.query(check_sql, function (err, data, fields) {
-        if (err) throw err;
-        res.json({
-            success: true,
-            message: "Successfully customer values added"
-        })
+        const result = Object.values(JSON.parse(JSON.stringify(data)));
+        if (result.length !== 0) {
+            res.json({
+                success: false,
+                message: "email id already exists"
+            })
+        } else {
+            let check_sql = `insert into account(account_number, account_type, branch, ifsc, applicant_name,
+                                                 applicant_phone_no, applicant_dob, applicant_email, applicant_address,
+                                                 applicant_gender, applicant_balance)
+                             VALUES ('${req.body["account_number"]}',
+                                     '${req.body["account_type"]}',
+                                     '${req.body["branch"]}',
+                                     '${req.body["ifsc"]}',
+                                     '${req.body["applicant_name"]}',
+                                     '${req.body["applicant_phone_no"]}',
+                                     '${req.body["applicant_dob"]}',
+                                     '${req.body["applicant_email"]}',
+                                     '${req.body["applicant_address"]}',
+                                     '${req.body["applicant_gender"]}',
+                                     '${req.body["applicant_balance"]}')`;
+            connection.query(check_sql, function (err, data, fields) {
+                if (err) throw err;
+                res.json({
+                    success: true,
+                    message: "Successfully customer values added"
+                })
+            })
+        }
     })
 });
 

@@ -20,42 +20,30 @@ connection.connect(function (err) {
 router.post('/register', function (req, res) {
     let check_sql = `select customer_email
                      from customer
-                     where customer_email = (?)`;
-    let check_values = [
-        req.body["email"]
-    ];
-    connection.query(check_sql, [check_values], function (err, data, fields) {
-        if (err) throw err;
-        console.log(data);
-        console.log(fields);
+                     where customer_email = '${req.body["customer_email"]}'`;
+    connection.query(check_sql, function (err, data, fields) {
         const result = Object.values(JSON.parse(JSON.stringify(data)));
-        result.forEach((v) => console.log(v));
         if (result.length !== 0) {
             res.json({
                 success: false,
-                message: "Email already in use"
+                message: "email id already exists"
             })
         } else {
-            let sql = `INSERT INTO customer(customer_name, customer_email, customer_password)
-                       VALUES (?)`;
-            let values = [
-                req.body.name,
-                req.body.email,
-                req.body.password
-            ];
-            // console.log(sql);
-            connection.query(sql, [values], function (err, data, fields) {
+            let register_query = `insert into customer(customer_name, customer_email, customer_password)
+                                  values ('${req.body["customer_name"]}',
+                                          '${req.body["customer_email"]}',
+                                          '${req.body["customer_password"]}')`;
+            connection.query(register_query, function (err, data, fields) {
                 if (err) throw err;
                 res.json({
                     success: true,
-                    message: "New customer added successfully"
+                    message: "Customer registered"
                 })
             })
         }
-
     })
-
 });
+
 
 // Customer login
 router.post('/', function (req, res) {
@@ -65,10 +53,7 @@ router.post('/', function (req, res) {
                        and customer_password = '${req.body["password"]}'`;
     connection.query(check_sql, function (err, data, fields) {
         if (err) throw err;
-        console.log(data);
-        console.log(fields);
         const result = Object.values(JSON.parse(JSON.stringify(data)));
-        result.forEach((v) => console.log(v));
         if (result.length === 0) {
             res.json({
                 success: false,
@@ -79,72 +64,140 @@ router.post('/', function (req, res) {
                 success: true,
                 message: "Logged in"
             })
-
         }
-
     })
-
 });
 
+
 // Get account number
-// router.get('/?acno=10',getAcNo)
-
-// router.get('/', function (req, res) {
-//     let check_sql = `select *
-//                      from account
-//                      where account_number = '${req.query["acno"]}'`;
-//     connection.query(check_sql, function (err, data, fields) {
-//         if (err) throw err;
-//         console.log(data);
-//         console.log(fields);
-//         const result = Object.values(JSON.parse(JSON.stringify(data)));
-//         result.forEach((v) => console.log(v));
-//         if (result.length === 0) {
-//             res.json({
-//                 success: false,
-//                 message: "Check your email or password"
-//             })
-//         } else {
-//             res.json({
-//                 success: true,
-//                 message: "Logged in"
-//             })
-//
-//         }
-//
-//     })
-//
-// });
-
-// Get transaction
-// router.get('/trans?acno=10',getTrans)
-
-// Send money
-// router.post('/send/',sendMoney)
-
-router.post('/send', function (req, res) {
-    let check_sql = `create trigger trig_ke after insert on transaction for each row set @sum=(select applicant_balance from account where account_number='${req.body["transacted_from"]}')-${req.body["debit_amt"]}'`;
-    connection.query(check_sql, function (err, data, fields) {
+router.get('/', function (req, res) {
+    let account_details_query = `select *
+                                 from account
+                                 where account_number = '${req.query["acno"]}'`;
+    connection.query(account_details_query, function (err, data, fields) {
         if (err) throw err;
-        console.log(data);
-        console.log(fields);
         const result = Object.values(JSON.parse(JSON.stringify(data)));
-        result.forEach((v) => console.log(v));
         if (result.length === 0) {
             res.json({
                 success: false,
-                message: "Check your email or password"
+                message: "please check account number"
             })
         } else {
+
             res.json({
                 success: true,
-                message: "Logged in"
+                message: "Customer details obtained",
+                data: result
             })
+        }
+    })
+});
 
+
+// Get transaction
+router.get('/trans', function (req, res) {
+    let account_details_query = `select *
+                                 from transaction
+                                 where transacted_from = '${req.query["acno"]}'
+                                 union
+                                 select *
+                                 from transaction
+                                 where transacted_to = '${req.query["acno"]}'`;
+    connection.query(account_details_query, function (err, data, fields) {
+        if (err) throw err;
+        const result = Object.values(JSON.parse(JSON.stringify(data)));
+        if (result.length === 0) {
+            res.json({
+                success: false,
+                message: "No transaction"
+            })
+        } else {
+
+            res.json({
+                success: true,
+                message: "Customer transaction details obtained",
+                data: result
+            })
+        }
+    })
+});
+
+
+// Send money
+router.post('/send', function (req, res) {
+    let check_account_num = `select *
+                             from account
+                             where account_number = '${req.body["transacted_to"]}'`;
+    connection.query(check_account_num, function (err, data, fields) {
+        if (err) throw err;
+        const result = Object.values(JSON.parse(JSON.stringify(data)));
+        // result.forEach(r => console.log(r));
+        // if there is ac no
+        let to_balance=result[0]["applicant_balance"];
+        if (result.length === 0) {
+            res.json({
+                success: false,
+                message: "Enter valid account"
+            })
         }
 
-    })
+        // if ac no exists
+        else {
 
+            let check_balance = `select applicant_balance
+                                 from account
+                                 where account_number = '${req.body["transacted_from"]}'`;
+            connection.query(check_balance, function (err, data, fields) {
+                if (err) throw err;
+                const bal = Object.values(JSON.parse(JSON.stringify(data)));
+                let from_balance = bal[0]["applicant_balance"];
+                // hfhf
+                if (from_balance > req.body["debit_amt"]) {
+                    let insert_sql = `insert into transaction (transaction_date, transacted_to, transacted_from, debit_amt, balance)
+                                      values ('${req.body["transaction_date"]}',
+                                              '${req.body["transacted_to"]}',
+                                              '${req.body["transacted_from"]}',
+                                              '${req.body["debit_amt"]}',
+                                              '${from_balance}' - '${req.body["debit_amt"]}')`;
+                    connection.query(insert_sql, function (err, data, fields) {
+                        if (err) throw err;
+                    })
+                    let update_from_sql = `update account
+                                           set applicant_balance=applicant_balance + '${req.body["debit_amt"]}'
+                                           where account_number = '${req.body["transacted_to"]}' `;
+                    connection.query(update_from_sql, function (err, data, fields) {
+                        if (err) throw err;
+                    })
+                    let update_from_sql2 = `update account
+                                            set applicant_balance=applicant_balance - '${req.body["debit_amt"]}'
+                                            where account_number = '${req.body["transacted_from"]}' `;
+                    connection.query(update_from_sql2, function (err, data, fields) {
+                        if (err) throw err;
+                    })
+                    let insert_sql2 = `insert into transaction (transaction_date, transacted_to, transacted_from, credit_amt, balance)
+                                       values ('${req.body["transaction_date"]}',
+                                               '${req.body["transacted_from"]}',
+                                               '${req.body["transacted_to"]}',
+                                               '${req.body["debit_amt"]}',
+                                               '${to_balance}' + '${req.body["debit_amt"]}')`;
+                    connection.query(insert_sql2, function (err, data, fields) {
+                        if (err) throw err;
+                    })
+                    res.json({
+                        success: false,
+                        message: "money sent"
+                    })
+                }
+                // insufficient balance
+                else {
+                    res.json({
+                        success: false,
+                        message: "debit amt greater than balance"
+                    })
+                }
+            })
+        }
+    })
 });
 
 module.exports = router;
