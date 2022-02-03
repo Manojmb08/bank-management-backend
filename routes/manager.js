@@ -19,16 +19,13 @@ connection.connect(function (err) {
 
 // Manager login
 router.post('/', function (req, res) {
-    let check_sql = `select manager_email, manager_password
-                     from manager
-                     where manager_email = '${req.body["email"]}'
-                       and manager_password = '${req.body["password"]}'`;
-    connection.query(check_sql, function (err, data, fields) {
+    let manager_login_query = `select manager_email, manager_password
+                               from manager
+                               where manager_email = '${req.body["email"]}'
+                                 and manager_password = '${req.body["password"]}'`;
+    connection.query(manager_login_query, function (err, data, fields) {
         if (err) throw err;
-        console.log(data);
-        console.log(fields);
         const result = Object.values(JSON.parse(JSON.stringify(data)));
-        result.forEach((v) => console.log(v));
         if (result.length === 0) {
             res.json({
                 success: false,
@@ -39,16 +36,12 @@ router.post('/', function (req, res) {
                 success: true,
                 message: "Logged in"
             })
-
         }
-
     })
-
 });
 
 
-// // Add Employee
-// router.post('/manager/addEmp/)
+// Add Employee
 router.post('/addEmp', function (req, res) {
     let check_sql = `insert into employee(employee_email, employee_password, employee_name, employee_gender,
                                           employee_phone_no, employee_address)
@@ -71,48 +64,29 @@ router.post('/addEmp', function (req, res) {
 });
 
 
-// // Get All Employee
-// router.get('/getAllEmp',getAllEmployee)
-
+// Get All Employee
 router.get('/getAllEmp', function (req, res) {
     let check_sql = `select *
                      from employee`;
     connection.query(check_sql, function (err, data, fields) {
         if (err) throw err;
-        // console.log(data);
-        // console.log(fields);
         const result = Object.values(JSON.parse(JSON.stringify(data)));
-        result.forEach((v) => console.log(v));
-        // if (result.length === 0) {
-        //     res.json({
-        //         success: false,
-        //         message: "Check your email or password"
-        //     })
-        // } else {
         res.json({
             success: true,
             message: "Employee list obtained",
             data: result
         })
-
-        // }
-
     })
-
 });
 
 
-// // update Employee
-// router.put('/updateEmp?id=1',updateEmployee)
-//
+// update Employee
 router.put('/updateEmp', function (req, res) {
     let find_sql = `select *
                     from employee
                     where employee_id = '${req.query["id"]}'`;
     connection.query(find_sql, function (err, data, fields) {
         if (err) throw err;
-        // console.log(data);
-        // console.log(fields);
         const result = Object.values(JSON.parse(JSON.stringify(data)));
         result.forEach((v) => console.log(v));
         if (result.length === 0) {
@@ -132,10 +106,6 @@ router.put('/updateEmp', function (req, res) {
             console.log(update_sql)
             connection.query(update_sql, function (err, data, fields) {
                 if (err) throw err;
-                // console.log(data);
-                // console.log(fields);
-                const result = Object.values(JSON.parse(JSON.stringify(data)));
-                result.forEach((v) => console.log(v));
                 res.json({
                     success: true,
                     message: "employee id is updated"
@@ -146,17 +116,13 @@ router.put('/updateEmp', function (req, res) {
 });
 
 
-// // delete Employee
-// router.delete('/delEmp?id=1',delEmployee)
-
+// delete Employee
 router.delete('/delEmp', function (req, res) {
     let find_sql = `select *
                     from employee
                     where employee_id = '${req.query["id"]}'`;
     connection.query(find_sql, function (err, data, fields) {
         if (err) throw err;
-        // console.log(data);
-        // console.log(fields);
         const result = Object.values(JSON.parse(JSON.stringify(data)));
         result.forEach((v) => console.log(v));
         if (result.length === 0) {
@@ -171,10 +137,6 @@ router.delete('/delEmp', function (req, res) {
             console.log(delete_sql)
             connection.query(delete_sql, function (err, data, fields) {
                 if (err) throw err;
-                // console.log(data);
-                // console.log(fields);
-                const result = Object.values(JSON.parse(JSON.stringify(data)));
-                result.forEach((v) => console.log(v));
                 res.json({
                     success: true,
                     message: "employee id is deleted"
@@ -185,65 +147,35 @@ router.delete('/delEmp', function (req, res) {
 });
 
 
-// // Get All Customer
-// router.get('/getAllCust',getAllCustomer)
-
+// Get All Customer
 router.get('/getAllCust', function (req, res) {
     let check_sql = `select *
-                     from customer`;
+                     from account`;
     connection.query(check_sql, function (err, data, fields) {
         if (err) throw err;
-        // console.log(data);
-        // console.log(fields);
         const result = Object.values(JSON.parse(JSON.stringify(data)));
-        result.forEach((v) => console.log(v));
-        // if (result.length === 0) {
-        //     res.json({
-        //         success: false,
-        //         message: "Check your email or password"
-        //     })
-        // } else {
         res.json({
             success: true,
             message: "Customer list obtained",
             data: result
         })
-
-        // }
-
     })
-
 });
 
 
-// // Get Transaction count
-// router.get('/getTrans',getTrans)
-
+// Get Transaction count
 router.get('/getTrans', function (req, res) {
-    let check_sql = `select count(*) as total_tranaction
+    let check_sql = `select count(*) as total_transaction
                      from transaction`;
     connection.query(check_sql, function (err, data, fields) {
         if (err) throw err;
-        // console.log(data);
-        // console.log(fields);
         const result = Object.values(JSON.parse(JSON.stringify(data)));
-        result.forEach((v) => console.log(v));
-        // if (result.length === 0) {
-        //     res.json({
-        //         success: false,
-        //         message: "Check your email or password"
-        //     })
-        // } else {
         res.json({
             success: true,
             message: "Transaction count obtained",
-            data: result
+            data: result[0]["total_transaction"]
         })
-
-        // }
-
     })
-
 });
 
 
