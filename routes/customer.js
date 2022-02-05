@@ -2,12 +2,20 @@ let express = require('express');
 let router = express.Router();
 const mysql = require('mysql');
 
+// let options = {
+//     host: 'localhost',
+//     port: 3306,
+//     user: 'root',
+//     password: '12345678',
+//     database: 'bank'
+// };
+
 let options = {
-    host: 'localhost',
+    host: 'blqcpn8e5iyd5bviqdle-mysql.services.clever-cloud.com',
     port: 3306,
-    user: 'root',
-    password: '12345678',
-    database: 'bank'
+    user: 'uezigxwwgajw9w7y',
+    password: 'OsN0RoQKOV1YNx7GSZGF',
+    database: 'blqcpn8e5iyd5bviqdle'
 };
 
 let connection = mysql.createConnection(options);
