@@ -30,16 +30,24 @@ router.post('/register', function (req, res) {
             })
         } else {
             let register_query = `insert into customer(customer_name, customer_email, customer_password)
-                                  values ('${req.body["customer_name"]}',
-                                          '${req.body["customer_email"]}',
-                                          '${req.body["customer_password"]}')`;
+                                  values ('${req.body["customer_name"]}', '${req.body["customer_email"]}', '${req.body["customer_password"]}')`;
             connection.query(register_query, function (err, data, fields) {
+                if (err) throw err;
+            })
+
+            let registe_query = `select *
+                                 from customer
+                                 where customer_email = '${req.body["customer_email"]}'`;
+            connection.query(registe_query, function (err, data, fields) {
+                const result = Object.values(JSON.parse(JSON.stringify(data)));
                 if (err) throw err;
                 res.json({
                     success: true,
-                    message: "Customer registered"
+                    message: "Customer registered",
+                    data: result[0]
                 })
             })
+
         }
     })
 });
@@ -47,7 +55,7 @@ router.post('/register', function (req, res) {
 
 // Customer login
 router.post('/', function (req, res) {
-    let check_sql = `select customer_email, customer_password
+    let check_sql = `select *
                      from customer
                      where customer_email = '${req.body["email"]}'
                        and customer_password = '${req.body["password"]}'`;
@@ -62,7 +70,8 @@ router.post('/', function (req, res) {
         } else {
             res.json({
                 success: true,
-                message: "Logged in"
+                message: "Logged in",
+                data: result[0]
             })
         }
     })
@@ -87,7 +96,7 @@ router.get('/', function (req, res) {
             res.json({
                 success: true,
                 message: "Customer details obtained",
-                data: result
+                data: result[0]
             })
         }
     })
@@ -102,10 +111,12 @@ router.get('/trans', function (req, res) {
                                  union
                                  select *
                                  from transaction
-                                 where transacted_to = '${req.query["acno"]}'`;
+                                 where transacted_to = '${req.query["acno"]}'
+                                 order by transaction_date desc `;
     connection.query(account_details_query, function (err, data, fields) {
         if (err) throw err;
         const result = Object.values(JSON.parse(JSON.stringify(data)));
+
         if (result.length === 0) {
             res.json({
                 success: false,
@@ -131,9 +142,8 @@ router.post('/send', function (req, res) {
     connection.query(check_account_num, function (err, data, fields) {
         if (err) throw err;
         const result = Object.values(JSON.parse(JSON.stringify(data)));
-        // result.forEach(r => console.log(r));
+        result.forEach(r => console.log(r));
         // if there is ac no
-        let to_balance=result[0]["applicant_balance"];
         if (result.length === 0) {
             res.json({
                 success: false,
@@ -143,7 +153,7 @@ router.post('/send', function (req, res) {
 
         // if ac no exists
         else {
-
+            let to_balance = result[0]["applicant_balance"];
             let check_balance = `select applicant_balance
                                  from account
                                  where account_number = '${req.body["transacted_from"]}'`;
@@ -184,7 +194,7 @@ router.post('/send', function (req, res) {
                         if (err) throw err;
                     })
                     res.json({
-                        success: false,
+                        success: true,
                         message: "money sent"
                     })
                 }

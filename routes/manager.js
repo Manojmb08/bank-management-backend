@@ -19,7 +19,7 @@ connection.connect(function (err) {
 
 // Manager login
 router.post('/', function (req, res) {
-    let manager_login_query = `select manager_email, manager_password
+    let manager_login_query = `select *
                                from manager
                                where manager_email = '${req.body["email"]}'
                                  and manager_password = '${req.body["password"]}'`;
@@ -34,7 +34,8 @@ router.post('/', function (req, res) {
         } else {
             res.json({
                 success: true,
-                message: "Logged in"
+                message: "Logged in",
+                data:result[0]
             })
         }
     })
@@ -79,7 +80,7 @@ router.post('/addEmp', function (req, res) {
 // Get All Employee
 router.get('/getAllEmp', function (req, res) {
     let check_sql = `select *
-                     from employee`;
+                     from employee order by employee_id desc `;
     connection.query(check_sql, function (err, data, fields) {
         if (err) throw err;
         const result = Object.values(JSON.parse(JSON.stringify(data)));
@@ -174,7 +175,7 @@ router.get('/getAllCust', function (req, res) {
 
 
 // Get Transaction count
-router.get('/getTrans', function (req, res) {
+router.get('/getTransCount', function (req, res) {
     let check_sql = `select count(*) as total_transaction
                      from transaction`;
     connection.query(check_sql, function (err, data, fields) {
@@ -184,6 +185,39 @@ router.get('/getTrans', function (req, res) {
             success: true,
             message: "Transaction count obtained",
             data: result[0]["total_transaction"]
+        })
+    })
+});
+
+
+// Get Customer count
+router.get('/getCustCount', function (req, res) {
+    let check_sql = `select count(*) as total_customer
+                     from account`;
+    connection.query(check_sql, function (err, data, fields) {
+        if (err) throw err;
+        const result = Object.values(JSON.parse(JSON.stringify(data)));
+        res.json({
+            success: true,
+            message: "Customer count obtained",
+            data: result[0]["total_customer"]
+        })
+    })
+});
+
+
+
+// Get Employee count
+router.get('/getEmpCount', function (req, res) {
+    let check_sql = `select count(*) as total_employee
+                     from employee`;
+    connection.query(check_sql, function (err, data, fields) {
+        if (err) throw err;
+        const result = Object.values(JSON.parse(JSON.stringify(data)));
+        res.json({
+            success: true,
+            message: "Employee count obtained",
+            data: result[0]["total_employee"]
         })
     })
 });
