@@ -1,6 +1,6 @@
 CREATE TABLE `bank`.`customer`
 (
-    `customer_id`       INT          NOT NULL AUTO_INCREMENT,
+    `customer_id`       BIGINT(10)   NOT NULL,
     `customer_name`     VARCHAR(100) NULL,
     `customer_email`    VARCHAR(45)  NULL,
     `customer_password` VARCHAR(45)  NULL,
