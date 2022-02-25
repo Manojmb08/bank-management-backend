@@ -1,38 +1,22 @@
 let express = require('express');
 let router = express.Router();
-
 const mysql = require('mysql');
+require('dotenv').config();
 
-// let options = {
-//     host: 'localhost',
-//     port: 3306,
-//     user: 'root',
-//     password: '12345678',
-//     database: 'bank'
-// };
-
-let options = {
-    host: 'blqcpn8e5iyd5bviqdle-mysql.services.clever-cloud.com',
-    port: 3306,
-    user: 'uezigxwwgajw9w7y',
-    password: 'OsN0RoQKOV1YNx7GSZGF',
-    database: 'blqcpn8e5iyd5bviqdle'
-};
-
-let connection = mysql.createConnection(options);
+let connection = mysql.createConnection(process.env.LOCAL_DATABASE_URL);
 connection.connect(function (err) {
-    if (err) throw err;
+    if (err) console.log(err);
     else console.log("Connected DB");
 });
 
 // Employee login
 router.post('/', function (req, res) {
-    let employee_login_query = `select employee_email, employee_password
+    let employee_login_query = `select *
                                 from employee
                                 where employee_email = '${req.body["email"]}'
                                   and employee_password = '${req.body["password"]}'`;
-    connection.query(employee_login_query, function (err, data, fields) {
-        if (err) throw err;
+    connection.query(employee_login_query, function (err, data) {
+        if (err) console.log(err);
         const result = Object.values(JSON.parse(JSON.stringify(data)));
         if (result.length === 0) {
             res.json({
@@ -42,7 +26,8 @@ router.post('/', function (req, res) {
         } else {
             res.json({
                 success: true,
-                message: "Logged in"
+                message: "Logged in",
+                data: result[0]
             })
         }
     })
@@ -55,8 +40,8 @@ router.get('/', function (req, res) {
                      from employee
                      where employee_id = '${req.query["id"]}'
                        and employee_email = '${req.query["email"]}'`;
-    connection.query(check_sql, function (err, data, fields) {
-        if (err) throw err;
+    connection.query(check_sql, function (err, data) {
+        if (err) console.log(err);
         const result = Object.values(JSON.parse(JSON.stringify(data)));
         if (result.length === 0) {
             res.json({
@@ -79,7 +64,7 @@ router.post('/addCust', function (req, res) {
     let check_sql = `select applicant_email
                      from account
                      where applicant_email = '${req.body["applicant_email"]}'`;
-    connection.query(check_sql, function (err, data, fields) {
+    connection.query(check_sql, function (err, data) {
         const result = Object.values(JSON.parse(JSON.stringify(data)));
         if (result.length !== 0) {
             res.json({
@@ -101,8 +86,8 @@ router.post('/addCust', function (req, res) {
                                      '${req.body["applicant_address"]}',
                                      '${req.body["applicant_gender"]}',
                                      '${req.body["applicant_balance"]}')`;
-            connection.query(check_sql, function (err, data, fields) {
-                if (err) throw err;
+            connection.query(check_sql, function (err) {
+                if (err) console.log(err);
                 res.json({
                     success: true,
                     message: "Successfully customer values added"
@@ -117,8 +102,8 @@ router.post('/addCust', function (req, res) {
 router.get('/getAllCust', function (req, res) {
     let check_sql = `select *
                      from account`;
-    connection.query(check_sql, function (err, data, fields) {
-        if (err) throw err;
+    connection.query(check_sql, function (err, data) {
+        if (err) console.log(err);
         const result = Object.values(JSON.parse(JSON.stringify(data)));
         res.json({
             success: true,
@@ -134,8 +119,8 @@ router.put('/updateCust', function (req, res) {
     let find_sql = `select *
                     from account
                     where account_id = '${req.query["id"]}'`;
-    connection.query(find_sql, function (err, data, fields) {
-        if (err) throw err;
+    connection.query(find_sql, function (err, data) {
+        if (err) console.log(err);
         const result = Object.values(JSON.parse(JSON.stringify(data)));
         if (result.length === 0) {
             res.json({
@@ -156,8 +141,8 @@ router.put('/updateCust', function (req, res) {
                                   applicant_gender='${req.body["applicant_gender"]}',
                                   applicant_balance='${req.body["applicant_balance"]}'
                               where account_id = '${req.query["id"]}' `;
-            connection.query(update_sql, function (err, data, fields) {
-                if (err) throw err;
+            connection.query(update_sql, function (err) {
+                if (err) console.log(err);
                 res.json({
                     success: true,
                     message: "employee id is updated"
@@ -173,8 +158,8 @@ router.delete('/delCust', function (req, res) {
     let find_sql = `select *
                     from account
                     where account_id = '${req.query["id"]}'`;
-    connection.query(find_sql, function (err, data, fields) {
-        if (err) throw err;
+    connection.query(find_sql, function (err, data) {
+        if (err) console.log(err);
         const result = Object.values(JSON.parse(JSON.stringify(data)));
         if (result.length === 0) {
             res.json({
@@ -185,8 +170,8 @@ router.delete('/delCust', function (req, res) {
             let delete_sql = `delete
                               from account
                               where account_id = '${req.query["id"]}'`;
-            connection.query(delete_sql, function (err, data, fields) {
-                if (err) throw err;
+            connection.query(delete_sql, function (err) {
+                if (err) console.log(err);
                 res.json({
                     success: true,
                     message: "employee id is deleted"
