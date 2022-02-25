@@ -1,27 +1,11 @@
 let express = require('express');
 let router = express.Router();
-
 const mysql = require('mysql');
+require('dotenv').config();
 
-// let options = {
-//     host: 'localhost',
-//     port: 3306,
-//     user: 'root',
-//     password: '12345678',
-//     database: 'bank'
-// };
-
-let options = {
-    host: 'blqcpn8e5iyd5bviqdle-mysql.services.clever-cloud.com',
-    port: 3306,
-    user: 'uezigxwwgajw9w7y',
-    password: 'OsN0RoQKOV1YNx7GSZGF',
-    database: 'blqcpn8e5iyd5bviqdle'
-};
-
-let connection = mysql.createConnection(options);
+let connection = mysql.createConnection(process.env.DATABASE_URL);
 connection.connect(function (err) {
-    if (err) throw err;
+    if (err) console.log(err);
     else console.log("Connected DB");
 });
 
@@ -31,8 +15,8 @@ router.post('/', function (req, res) {
                                from manager
                                where manager_email = '${req.body["email"]}'
                                  and manager_password = '${req.body["password"]}'`;
-    connection.query(manager_login_query, function (err, data, fields) {
-        if (err) throw err;
+    connection.query(manager_login_query, function (err, data) {
+        if (err) console.log(err);
         const result = Object.values(JSON.parse(JSON.stringify(data)));
         if (result.length === 0) {
             res.json({
@@ -43,7 +27,7 @@ router.post('/', function (req, res) {
             res.json({
                 success: true,
                 message: "Logged in",
-                data:result[0]
+                data: result[0]
             })
         }
     })
@@ -55,7 +39,7 @@ router.post('/addEmp', function (req, res) {
     let check_sql = `select employee_email
                      from employee
                      where employee_email = '${req.body["employee_email"]}'`;
-    connection.query(check_sql, function (err, data, fields) {
+    connection.query(check_sql, function (err, data) {
         const result = Object.values(JSON.parse(JSON.stringify(data)));
         if (result.length !== 0) {
             res.json({
@@ -71,8 +55,8 @@ router.post('/addEmp', function (req, res) {
                                       '${req.body["employee_gender"]}',
                                       '${req.body["employee_phone_no"]}',
                                       '${req.body["employee_address"]}')`;
-            connection.query(insert_emp, function (err, data, fields) {
-                if (err) throw err;
+            connection.query(insert_emp, function (err) {
+                if (err) console.log(err);
 
                 res.json({
                     success: true,
@@ -88,9 +72,10 @@ router.post('/addEmp', function (req, res) {
 // Get All Employee
 router.get('/getAllEmp', function (req, res) {
     let check_sql = `select *
-                     from employee order by employee_id desc `;
-    connection.query(check_sql, function (err, data, fields) {
-        if (err) throw err;
+                     from employee
+                     order by employee_id desc `;
+    connection.query(check_sql, function (err, data) {
+        if (err) console.log(err);
         const result = Object.values(JSON.parse(JSON.stringify(data)));
         res.json({
             success: true,
@@ -106,8 +91,8 @@ router.put('/updateEmp', function (req, res) {
     let find_sql = `select *
                     from employee
                     where employee_id = '${req.query["id"]}'`;
-    connection.query(find_sql, function (err, data, fields) {
-        if (err) throw err;
+    connection.query(find_sql, function (err, data) {
+        if (err) console.log(err);
         const result = Object.values(JSON.parse(JSON.stringify(data)));
         if (result.length === 0) {
             res.json({
@@ -123,8 +108,8 @@ router.put('/updateEmp', function (req, res) {
                                   employee_phone_no='${req.body["employee_phone_no"]}',
                                   employee_address='${req.body["employee_address"]}'
                               where employee_id = '${req.query["id"]}' `;
-            connection.query(update_sql, function (err, data, fields) {
-                if (err) throw err;
+            connection.query(update_sql, function (err) {
+                if (err) console.log(err);
                 res.json({
                     success: true,
                     message: "employee id is updated"
@@ -140,8 +125,8 @@ router.delete('/delEmp', function (req, res) {
     let find_sql = `select *
                     from employee
                     where employee_id = '${req.query["id"]}'`;
-    connection.query(find_sql, function (err, data, fields) {
-        if (err) throw err;
+    connection.query(find_sql, function (err, data) {
+        if (err) console.log(err);
         const result = Object.values(JSON.parse(JSON.stringify(data)));
         result.forEach((v) => console.log(v));
         if (result.length === 0) {
@@ -154,8 +139,8 @@ router.delete('/delEmp', function (req, res) {
                               from employee
                               where employee_id = '${req.query["id"]}'`;
             console.log(delete_sql)
-            connection.query(delete_sql, function (err, data, fields) {
-                if (err) throw err;
+            connection.query(delete_sql, function (err) {
+                if (err) console.log(err);
                 res.json({
                     success: true,
                     message: "employee id is deleted"
@@ -170,8 +155,8 @@ router.delete('/delEmp', function (req, res) {
 router.get('/getAllCust', function (req, res) {
     let check_sql = `select *
                      from account`;
-    connection.query(check_sql, function (err, data, fields) {
-        if (err) throw err;
+    connection.query(check_sql, function (err, data) {
+        if (err) console.log(err);
         const result = Object.values(JSON.parse(JSON.stringify(data)));
         res.json({
             success: true,
@@ -186,8 +171,8 @@ router.get('/getAllCust', function (req, res) {
 router.get('/getTransCount', function (req, res) {
     let check_sql = `select count(*) as total_transaction
                      from transaction`;
-    connection.query(check_sql, function (err, data, fields) {
-        if (err) throw err;
+    connection.query(check_sql, function (err, data) {
+        if (err) console.log(err);
         const result = Object.values(JSON.parse(JSON.stringify(data)));
         res.json({
             success: true,
@@ -202,8 +187,8 @@ router.get('/getTransCount', function (req, res) {
 router.get('/getCustCount', function (req, res) {
     let check_sql = `select count(*) as total_customer
                      from account`;
-    connection.query(check_sql, function (err, data, fields) {
-        if (err) throw err;
+    connection.query(check_sql, function (err, data) {
+        if (err) console.log(err);
         const result = Object.values(JSON.parse(JSON.stringify(data)));
         res.json({
             success: true,
@@ -214,13 +199,12 @@ router.get('/getCustCount', function (req, res) {
 });
 
 
-
 // Get Employee count
 router.get('/getEmpCount', function (req, res) {
     let check_sql = `select count(*) as total_employee
                      from employee`;
-    connection.query(check_sql, function (err, data, fields) {
-        if (err) throw err;
+    connection.query(check_sql, function (err, data) {
+        if (err) console.log(err);
         const result = Object.values(JSON.parse(JSON.stringify(data)));
         res.json({
             success: true,
