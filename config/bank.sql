@@ -4,6 +4,7 @@ CREATE TABLE `bank`.`customer`
     `customer_name`     VARCHAR(100) NULL,
     `customer_email`    VARCHAR(45)  NULL,
     `customer_password` VARCHAR(45)  NULL,
+    `account_id`        INT          NOT NULL,
     PRIMARY KEY (`customer_id`)
 );
 
@@ -20,7 +21,7 @@ CREATE TABLE `bank`.`account`
     `applicant_email`    VARCHAR(45)  NULL,
     `applicant_address`  VARCHAR(100) NULL,
     `applicant_gender`   VARCHAR(2)   NULL,
-    `applicant_balance`   VARCHAR(20)   NULL,
+    `applicant_balance`  VARCHAR(20)  NULL,
     PRIMARY KEY (`account_id`)
 );
 

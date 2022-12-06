@@ -3,7 +3,7 @@ let router = express.Router();
 const mysql = require('mysql');
 require('dotenv').config();
 
-let connection = mysql.createConnection(process.env.DATABASE_URL);
+let connection = mysql.createConnection(process.env.LOCAL_DATABASE_URL);
 connection.connect(function (err) {
     if (err) console.log(err);
     else console.log("Connected DB");
@@ -30,7 +30,7 @@ router.post('/register', function (req, res) {
                                where customer_email = '${req.body["customer_email"]}'
                                  and account_no = '${req.body["acNo"]}'`;
             connection.query(check_query, function (err, data) {
-                const result = Object.values(JSON.parse(JSON.stringify(data)));
+                const result = Object.values(JSON.parse(JSON.stringify(data ?? [])));
                 console.log(result);
                 // result.forEach(r => console.log(r));
                 if (err) console.log(err);
@@ -112,7 +112,7 @@ router.get('/trans', function (req, res) {
     let account_details_query = `select *
                                  from transaction
                                  where transacted_from = '${req.query["acno"]}'
-                                 order by transaction_date desc `;
+                                 order by transaction_id desc `;
     connection.query(account_details_query, function (err, data) {
         if (err) console.log(err);
         const result = Object.values(JSON.parse(JSON.stringify(data)));

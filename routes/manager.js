@@ -3,7 +3,7 @@ let router = express.Router();
 const mysql = require('mysql');
 require('dotenv').config();
 
-let connection = mysql.createConnection(process.env.DATABASE_URL);
+let connection = mysql.createConnection(process.env.LOCAL_DATABASE_URL);
 connection.connect(function (err) {
     if (err) console.log(err);
     else console.log("Connected DB");
